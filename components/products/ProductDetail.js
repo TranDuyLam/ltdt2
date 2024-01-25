@@ -2,34 +2,33 @@ import React from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../Header';
-import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 export default function ProductDetail({ route,navigation }) {
-  var x=true;
   const { item } = route.params;
-  const handlePress = () => {
-    alert("Thêm vào giỏ hàng thành công!");
-  };
 
   const addToCart = async (product) => {
     try {
-      if (x==true){
+      const existingCart = await AsyncStorage.getItem("cart");
+      let cart = existingCart ? JSON.parse(existingCart) : [];
 
-      const existingCart = await AsyncStorage.getItem('cart');
-      const cart = existingCart ? JSON.parse(existingCart) : [];
-      cart.push(product);
-      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+      const existingProductIndex = cart.findIndex(
+        (item) => item.id === product.id
+      );
 
-      console.log('Sản phẩm đã được thêm vào giỏ hàng thành công!');
-      alert("Thêm vào giỏ hàng thành công!");
-      x=false;
-    
-    }
-      else{
-        alert("Sản phẩm đã có trong giỏ hàng!");
+      if (existingProductIndex >= 0) {
+        cart[existingProductIndex].quantity += 1;
+      } else {
+        product.quantity = 1;
+        cart.push(product);
       }
+
+      await AsyncStorage.setItem("cart", JSON.stringify(cart));
+
+      console.log("Sản phẩm đã được thêm vào giỏ hàng thành công!");
+      alert("Thêm vào giỏ hàng thành công!");
     } catch (error) {
-      console.error('Lỗi khi thêm vào giỏ hàng:', error);
+      console.error("Lỗi khi thêm vào giỏ hàng:", error);
     }
   };
 
@@ -43,9 +42,9 @@ export default function ProductDetail({ route,navigation }) {
       </View>
      
       <Text style={styles.productTitle}>{item.title}</Text>
-      <Text style={styles.productPrice}>Giá tiền: ${item.price}</Text>
+      <Text style={styles.productPrice}>Giá: ${item.price}</Text>
       <Text style={styles.productDescription}>{item.description}</Text>
-      <Text style={styles.productCategory}>Danhxxx mục: {item.category}</Text>
+      <Text style={styles.productCategory}>sản phẩm: {item.category}</Text>
     
       <TouchableOpacity
         style={styles.addToCartButton}
